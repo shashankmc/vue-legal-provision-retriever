@@ -14,26 +14,39 @@
     },
     "./style.css": "./dist/vue-legal-provision-retriever.css"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build && node scripts/copy-types.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
   },
-  "keywords": ["vue", "vue3", "legal", "retrieval", "bluelab"],
+  "keywords": [
+    "vue",
+    "vue3",
+    "legal",
+    "retrieval",
+    "bluelab"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shashankmc/vue-legal-provision-retriever.git"
   },
   "homepage": "https://github.com/shashankmc/vue-legal-provision-retriever#readme",
-  "bugs": { "url": "https://github.com/shashankmc/vue-legal-provision-retriever/issues" },
+  "bugs": {
+    "url": "https://github.com/shashankmc/vue-legal-provision-retriever/issues"
+  },
   "dependencies": {
     "legal-provision-types": "git+https://github.com/shashankmc/legal-provision-types.git#1388a4c",
     "lucide-vue-next": "^1.0.0"
   },
-  "peerDependencies": { "vue": "^3.4.0" },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
     "@vue/test-utils": "^2.4.6",
