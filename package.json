@@ -12,7 +12,7 @@
       "require": "./dist/vue-legal-provision-retriever.umd.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./style.css": "./dist/vue-legal-provision-retriever.css"
+    "./style.css": "./dist/style.css"
   },
   "files": [
     "dist"
