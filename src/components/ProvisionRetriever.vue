@@ -3,7 +3,16 @@
     <h2 v-if="props.title" class="title">{{ props.title }}</h2>
 
     <div class="controls">
-      <div class="control-group">
+      <div v-if="showProviderSelector" class="control-group">
+        <label>Provider</label>
+        <select class="provider-select" :value="activeProviderId" @change="onProviderChange">
+          <option v-for="provider in availableProviders" :key="provider.id" :value="provider.id">
+            {{ provider.label }}
+          </option>
+        </select>
+      </div>
+
+      <div v-if="showMethodControls" class="control-group">
         <label>Method</label>
         <button
           v-for="m in methods"
@@ -18,7 +27,7 @@
         </button>
       </div>
 
-      <div class="control-group">
+      <div v-if="showThresholdControls" class="control-group">
         <label>Threshold</label>
         <input
           class="threshold-slider"
@@ -48,7 +57,7 @@
         v-for="doc in documents"
         :key="doc.doc_id"
         class="doc-card"
-        :class="{ 'below-threshold': isBelowThreshold(doc.score, threshold) }"
+        :class="{ 'below-threshold': showThresholdControls && isBelowThreshold(doc.score, threshold) }"
         :data-doc-id="doc.doc_id"
       >
         <div class="doc-title">
@@ -80,6 +89,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { RankedDocumentV1 } from 'legal-provision-types'
+import type { RetrievalProvider } from '../providers'
+import { createHostProvider } from '../providers'
 import {
   DEFAULT_METHOD,
   DEFAULT_THRESHOLD,
@@ -93,17 +104,19 @@ import {
   scoreWidth,
 } from './retrieval'
 import { provideHostCallbacks } from './hostCallbacks'
-import type { MethodOption, ProvisionRetrieverProps } from './types'
+import type { MethodOption, ProvisionRetrieverProps, RetrievalProvenance } from './types'
 
 const props = withDefaults(defineProps<ProvisionRetrieverProps>(), {
   defaultMethod: DEFAULT_METHOD,
   defaultThreshold: DEFAULT_THRESHOLD,
   showEvaluation: false,
+  emitProvenance: true,
+  emitErrorProvenance: false,
 })
 
 const emit = defineEmits<{
   results: [data: import('legal-provision-types').RankedProvisionsV1]
-  provenance: [event: import('legal-provision-types').ProvenanceEventV1]
+  provenance: [event: RetrievalProvenance]
 }>()
 
 const builtInMethods: MethodOption[] = [
@@ -112,12 +125,40 @@ const builtInMethods: MethodOption[] = [
   { id: 'sbert', label: 'SBERT' },
 ]
 
+const fallbackProvider: RetrievalProvider = createHostProvider({
+  id: 'case-law',
+  label: 'Case Law',
+  search: (args) => props.onSearch?.(args) ?? Promise.reject(new Error('onSearch is not set')),
+  listMethods: () => props.onListMethods?.() ?? Promise.resolve(builtInMethods),
+})
+
+const availableProviders = computed<RetrievalProvider[]>(() =>
+  props.providers?.length ? props.providers : [fallbackProvider],
+)
+
+const activeProviderId = ref(props.defaultProvider ?? availableProviders.value[0].id)
+
+const activeProvider = computed<RetrievalProvider>(() => {
+  return availableProviders.value.find((provider) => provider.id === activeProviderId.value) ?? availableProviders.value[0]
+})
+
+const showProviderSelector = computed(() => {
+  return props.providerMode === 'multi' && availableProviders.value.length > 1
+})
+
+const usingProviderRegistry = computed(() => (props.providers?.length ?? 0) > 0)
+
+const showMethodControls = computed(() => methods.value.length > 0)
+
+const showThresholdControls = computed(() => activeProvider.value.capabilities?.supportsThreshold !== false)
+
 const methods = ref<MethodOption[]>(builtInMethods)
 const method = ref(props.defaultMethod)
 const threshold = ref(normaliseThreshold(props.defaultThreshold))
 const documents = ref<RankedDocumentV1[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+let searchRequestId = 0
 
 provideHostCallbacks({
   search: (args) => props.onSearch?.(args) ?? Promise.reject(new Error('onSearch is not set')),
@@ -126,7 +167,9 @@ provideHostCallbacks({
 
 const evalMetrics = computed(() =>
   evaluateSelection(
-    documents.value.filter((d) => !isBelowThreshold(d.score, threshold.value)).map((d) => d.doc_id),
+    documents.value
+      .filter((d) => !showThresholdControls.value || !isBelowThreshold(d.score, threshold.value))
+      .map((d) => d.doc_id),
     props.groundTruth,
   ),
 )
@@ -136,19 +179,35 @@ function isRelevant(docId: string): boolean {
 }
 
 onMounted(async () => {
+  if (!availableProviders.value.some((provider) => provider.id === activeProviderId.value)) {
+    activeProviderId.value = availableProviders.value[0].id
+  }
+  await refreshProviderState()
+  await runSearch('load')
+})
+
+async function refreshProviderState() {
+  if (activeProvider.value.capabilities?.supportsMethodListing === false) {
+    methods.value = []
+    return
+  }
+
   try {
-    methods.value = (await props.onListMethods?.()) ?? builtInMethods
+    const listedMethods = await activeProvider.value.listMethods({
+      case_id: props.case?.case_id,
+    })
+    methods.value = listedMethods.length > 0 ? listedMethods : usingProviderRegistry.value ? [] : builtInMethods
     // BM25 stays the default when offered (D.2 #7).
     if (!methods.value.some((m) => m.id === method.value) && methods.value.length > 0) {
       method.value = methods.value.find((m) => m.id === DEFAULT_METHOD)?.id ?? methods.value[0].id
     }
   } catch {
-    methods.value = builtInMethods
+    methods.value = usingProviderRegistry.value ? [] : builtInMethods
   }
-  await runSearch('load')
-})
+}
 
-function provenance(action: string, extra: Partial<import('legal-provision-types').ProvenanceEventV1> = {}) {
+function provenance(action: string, extra: Partial<RetrievalProvenance> = {}) {
+  if (!props.emitProvenance) return
   emit('provenance', {
     timestamp: new Date().toISOString(),
     action,
@@ -156,30 +215,41 @@ function provenance(action: string, extra: Partial<import('legal-provision-types
     target_id: props.case?.case_id ?? null,
     method: method.value,
     threshold: threshold.value,
+    provider_id: activeProvider.value.id,
     ...extra,
   })
 }
 
 async function runSearch(action: string) {
-  if (!props.case || !props.onSearch) {
+  if (!props.case) {
     documents.value = []
     return
   }
+  const requestId = ++searchRequestId
   loading.value = true
   error.value = null
   try {
-    const data = await props.onSearch({
+    const data = await activeProvider.value.search({
       query: props.case.fact_pattern,
       method: method.value,
       case_id: props.case.case_id,
     })
+    if (requestId !== searchRequestId) return
     documents.value = data.documents ?? []
     emit('results', data)
     provenance(action)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Search failed'
+    if (requestId !== searchRequestId) return
+    const message = err instanceof Error ? err.message : 'Search failed'
+    error.value = message
     documents.value = []
+    if (props.emitErrorProvenance) {
+      provenance('search_error', {
+        reason: message,
+      })
+    }
   } finally {
+    if (requestId !== searchRequestId) return
     loading.value = false
   }
 }
@@ -193,6 +263,15 @@ function setMethod(id: string) {
 function onThresholdInput(event: Event) {
   threshold.value = normaliseThreshold(Number((event.target as HTMLInputElement).value) / 100)
   // Re-evaluate selection live; the score data does not change with threshold.
+}
+
+async function onProviderChange(event: Event) {
+  const providerId = (event.target as HTMLSelectElement).value
+  if (providerId === activeProviderId.value) return
+  activeProviderId.value = providerId
+  documents.value = []
+  await refreshProviderState()
+  await runSearch('change_provider')
 }
 </script>
 
@@ -234,6 +313,14 @@ function onThresholdInput(event: Event) {
   background: #1b6b93;
   color: #fff;
   border-color: #1b6b93;
+}
+.provider-select {
+  min-width: 150px;
+  padding: 5px 10px;
+  border: 1px solid #d8e3eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #3d4f60;
 }
 .threshold-slider {
   width: 160px;

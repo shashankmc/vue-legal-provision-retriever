@@ -3,6 +3,7 @@ import type {
   RankedProvisionsV1,
   ProvenanceEventV1,
 } from 'legal-provision-types'
+import type { ProviderMode, RetrievalProvider } from '../providers'
 
 /** One retrieval method, as the server lists it. */
 export interface MethodOption {
@@ -26,8 +27,18 @@ export interface ProvisionRetrieverProps {
   onListMethods?: () => Promise<MethodOption[]>
   /** Ground truth, when research mode is on behind a `groundTruth` flag. */
   groundTruth?: GroundTruth | null
+  /** Optional provider mode override (single/multi). */
+  providerMode?: ProviderMode
+  /** Optional provider registry for multi-provider retrieval flows. */
+  providers?: RetrievalProvider[]
+  /** Preferred provider when `providers` are supplied. */
+  defaultProvider?: string
   /** Whether to show the evaluation badge. Default false. */
   showEvaluation?: boolean
+  /** Whether to emit provenance events. Default true. */
+  emitProvenance?: boolean
+  /** Whether to emit provenance events for failed retrieval calls. Default false. */
+  emitErrorProvenance?: boolean
   defaultMethod?: string
   defaultThreshold?: number
 }
@@ -36,4 +47,6 @@ export interface ProvisionRetrieverProps {
 export type RetrievalResults = RankedProvisionsV1
 
 /** Emitted for each provenance-worthy action. */
-export type RetrievalProvenance = ProvenanceEventV1
+export type RetrievalProvenance = ProvenanceEventV1 & {
+  provider_id?: string | null
+}

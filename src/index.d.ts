@@ -9,6 +9,27 @@ export type {
   RetrievalProvenance,
 } from "./components/types";
 
+export type {
+  ProviderMode,
+  RetrievalProviderCapabilities,
+  RetrievalTransportConfig,
+  RetrievalProviderConfig,
+  QueryBuilderConfig,
+  ResolvedQueryBuilderConfig,
+  ProviderContext,
+  ProviderSearchContext,
+  RetrievalProvider,
+  HostProviderOptions,
+} from "./providers";
+
+export declare function resolveQueryBuilderConfig(
+  input?: import("./providers").QueryBuilderConfig,
+): import("./providers").ResolvedQueryBuilderConfig;
+
+export declare function createHostProvider(
+  options: import("./providers").HostProviderOptions,
+): import("./providers").RetrievalProvider;
+
 export declare const DEFAULT_THRESHOLD: number;
 export declare const DEFAULT_METHOD: string;
 

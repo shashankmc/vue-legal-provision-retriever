@@ -149,4 +149,126 @@ describe('ProvisionRetriever', () => {
     await flushPromises()
     expect(wrapper.find('.error').text()).toContain('boom')
   })
+
+  it('can emit search_error provenance on failed retrieval calls', async () => {
+    const wrapper = mountRetriever({
+      emitErrorProvenance: true,
+      onSearch: vi.fn().mockRejectedValue(new Error('boom')),
+    })
+
+    await flushPromises()
+
+    const events = wrapper.emitted('provenance')!.map((event) => event[0] as { action: string; reason?: string })
+    expect(events.some((event) => event.action === 'search_error' && event.reason === 'boom')).toBe(true)
+  })
+
+  it('can disable provenance emission', async () => {
+    const wrapper = mountRetriever({ emitProvenance: false })
+    await flushPromises()
+
+    await wrapper.findAll('.method-btn')[0].trigger('click')
+    await flushPromises()
+
+    expect(wrapper.emitted('provenance')).toBeUndefined()
+  })
+
+  it('keeps provider selector hidden in single mode', async () => {
+    const wrapper = mountRetriever({
+      providerMode: 'single',
+      providers: [
+        {
+          id: 'case-law',
+          label: 'Case Law',
+          listMethods: vi.fn().mockResolvedValue([{ id: 'bm25', label: 'BM25' }]),
+          search: vi.fn().mockResolvedValue(ranked(0.42)),
+        },
+        {
+          id: 'provisions',
+          label: 'Provisions',
+          listMethods: vi.fn().mockResolvedValue([{ id: 'sbert', label: 'SBERT' }]),
+          search: vi.fn().mockResolvedValue(ranked(0.55)),
+        },
+      ],
+    })
+
+    await flushPromises()
+    expect(wrapper.find('.provider-select').exists()).toBe(false)
+  })
+
+  it('supports single-mode fixed provider selection via defaultProvider', async () => {
+    const provisionSearch = vi.fn().mockResolvedValue(ranked(0.55))
+    const wrapper = mountRetriever({
+      providerMode: 'single',
+      defaultProvider: 'provisions',
+      providers: [
+        {
+          id: 'case-law',
+          label: 'Case Law',
+          capabilities: { supportsMethodListing: false, supportsThreshold: false },
+          listMethods: vi.fn().mockResolvedValue([]),
+          search: vi.fn().mockResolvedValue(ranked(0.42)),
+        },
+        {
+          id: 'provisions',
+          label: 'Provisions',
+          listMethods: vi.fn().mockResolvedValue([{ id: 'sbert', label: 'SBERT' }]),
+          search: provisionSearch,
+        },
+      ],
+    })
+
+    await flushPromises()
+    expect(wrapper.find('.provider-select').exists()).toBe(false)
+    expect(provisionSearch).toHaveBeenCalledTimes(1)
+    expect(wrapper.findAll('.method-btn').map((button) => button.text())).toEqual(['SBERT'])
+  })
+
+  it('switches provider in multi mode and refreshes retrieval', async () => {
+    const caseLawSearch = vi.fn().mockResolvedValue(ranked(0.42))
+    const provisionSearch = vi.fn().mockResolvedValue(ranked(0.55))
+
+    const wrapper = mountRetriever({
+      providerMode: 'multi',
+      defaultProvider: 'case-law',
+      providers: [
+        {
+          id: 'case-law',
+          label: 'Case Law',
+          capabilities: { supportsMethodListing: false, supportsThreshold: false },
+          listMethods: vi.fn().mockResolvedValue([]),
+          search: caseLawSearch,
+        },
+        {
+          id: 'provisions',
+          label: 'Provisions',
+          listMethods: vi.fn().mockResolvedValue([{ id: 'sbert', label: 'SBERT' }]),
+          search: provisionSearch,
+        },
+      ],
+    })
+
+    await flushPromises()
+    expect(wrapper.find('.provider-select').exists()).toBe(true)
+    expect(caseLawSearch).toHaveBeenCalledTimes(1)
+    expect(wrapper.findAll('.method-btn')).toHaveLength(0)
+    expect(wrapper.find('.threshold-slider').exists()).toBe(false)
+
+    await wrapper.find('.provider-select').setValue('provisions')
+    await flushPromises()
+
+    expect(provisionSearch).toHaveBeenCalledTimes(1)
+    expect(provisionSearch.mock.calls[0][0].method).toBe('sbert')
+    expect(wrapper.findAll('.method-btn').map((button) => button.text())).toEqual(['SBERT'])
+    expect(wrapper.find('.threshold-slider').exists()).toBe(true)
+
+    const actions = wrapper.emitted('provenance')!.map((event) => (event[0] as { action: string }).action)
+    expect(actions).toContain('change_provider')
+
+    const changeProviderEvent = wrapper
+      .emitted('provenance')!
+      .map((event) => event[0] as { action: string; provider_id?: string })
+      .find((event) => event.action === 'change_provider')
+
+    expect(changeProviderEvent?.provider_id).toBe('provisions')
+  })
 })

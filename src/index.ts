@@ -11,6 +11,21 @@ export type {
   RetrievalProvenance,
 } from './components/types'
 
+export type {
+  ProviderMode,
+  RetrievalProviderCapabilities,
+  RetrievalTransportConfig,
+  RetrievalProviderConfig,
+  QueryBuilderConfig,
+  ResolvedQueryBuilderConfig,
+  ProviderContext,
+  ProviderSearchContext,
+  RetrievalProvider,
+  HostProviderOptions,
+} from './providers'
+
+export { resolveQueryBuilderConfig, createHostProvider } from './providers'
+
 // Pure helpers, exported so a host can reuse them without the component.
 export {
   DEFAULT_METHOD,
