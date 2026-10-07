@@ -3,7 +3,10 @@ import {
   createHostProvider,
   createProvidersFromConfig,
   createTransportProvider,
+  QueryBuilderManifestValidationError,
+  resolveQueryBuilderConfigFromManifest,
   resolveQueryBuilderConfig,
+  validateQueryBuilderManifest,
 } from '../src/providers'
 
 describe('provider config helpers', () => {
@@ -216,5 +219,49 @@ describe('provider config helpers', () => {
       method: 'POST',
       body: { query: 'q', method: 'api', case_id: 'halden' },
     })
+  })
+
+  it('validates manifest shape and resolves config from manifest', () => {
+    const manifest = validateQueryBuilderManifest({
+      schemaVersion: '1',
+      providerMode: 'single',
+      defaultProvider: 'case-law',
+      providers: [
+        {
+          id: 'case-law',
+          label: 'Case Law',
+          type: 'case-law',
+          transport: { searchEndpoint: '/api/case-law/search' },
+        },
+      ],
+      features: {
+        emitProvenance: true,
+      },
+    })
+
+    expect(manifest.schemaVersion).toBe('1')
+    const resolved = resolveQueryBuilderConfigFromManifest(manifest)
+    expect(resolved.defaultProvider).toBe('case-law')
+    expect(resolved.features.emitProvenance).toBe(true)
+    expect(resolved.providers[0].capabilities?.supportsThreshold).toBe(false)
+  })
+
+  it('throws structured manifest validation errors', () => {
+    try {
+      validateQueryBuilderManifest({
+        schemaVersion: '2',
+        providerMode: 'many',
+        defaultProvider: '',
+        providers: [],
+      })
+      throw new Error('expected validation to fail')
+    } catch (error) {
+      expect(error).toBeInstanceOf(QueryBuilderManifestValidationError)
+      const validationError = error as QueryBuilderManifestValidationError
+      expect(validationError.code).toBe('INVALID_MANIFEST')
+      expect(validationError.issues.map((issue) => issue.path)).toEqual(
+        expect.arrayContaining(['schemaVersion', 'providerMode', 'defaultProvider', 'providers']),
+      )
+    }
   })
 })

@@ -90,6 +90,10 @@ This package now also exports phase-1 provider/config helpers intended for the
   config + injected request executor.
 - `createProvidersFromConfig` - resolves config and creates adapters for all
   configured providers.
+- `validateQueryBuilderManifest` - validates `schemaVersion: "1"` manifest
+  objects and throws a structured `QueryBuilderManifestValidationError`.
+- `resolveQueryBuilderConfigFromManifest` - validates a manifest and resolves
+  runtime defaults in one step.
 - Types for provider manifests and resolved config, including single vs multi
   provider mode.
 

@@ -17,6 +17,9 @@ export type {
   RetrievalTransportConfig,
   RetrievalProviderConfig,
   QueryBuilderConfig,
+  QueryBuilderManifestV1,
+  QueryBuilderManifest,
+  ValidationIssue,
   ResolvedQueryBuilderConfig,
   ProviderContext,
   ProviderSearchContext,
@@ -26,6 +29,7 @@ export type {
   TransportExecutor,
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
+  QueryBuilderManifestValidationError,
 } from './providers'
 
 export {
@@ -33,6 +37,8 @@ export {
   createHostProvider,
   createTransportProvider,
   createProvidersFromConfig,
+  validateQueryBuilderManifest,
+  resolveQueryBuilderConfigFromManifest,
 } from './providers'
 
 // Pure helpers, exported so a host can reuse them without the component.

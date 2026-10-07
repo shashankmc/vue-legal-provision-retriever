@@ -15,6 +15,9 @@ export type {
   RetrievalTransportConfig,
   RetrievalProviderConfig,
   QueryBuilderConfig,
+  QueryBuilderManifestV1,
+  QueryBuilderManifest,
+  ValidationIssue,
   ResolvedQueryBuilderConfig,
   ProviderContext,
   ProviderSearchContext,
@@ -24,6 +27,7 @@ export type {
   TransportExecutor,
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
+  QueryBuilderManifestValidationError,
 } from "./providers";
 
 export declare function resolveQueryBuilderConfig(
@@ -41,6 +45,14 @@ export declare function createTransportProvider(
 export declare function createProvidersFromConfig(
   options: import("./providers").CreateProvidersFromConfigOptions,
 ): import("./providers").RetrievalProvider[];
+
+export declare function validateQueryBuilderManifest(
+  manifest: unknown,
+): import("./providers").QueryBuilderManifest;
+
+export declare function resolveQueryBuilderConfigFromManifest(
+  manifest: unknown,
+): import("./providers").ResolvedQueryBuilderConfig;
 
 export declare const DEFAULT_THRESHOLD: number;
 export declare const DEFAULT_METHOD: string;
