@@ -1,6 +1,6 @@
 # vue-legal-provision-retriever
 
-BlueLab provision retriever: a method picker, a threshold slider, ranked
+Provision retriever: a method picker, a threshold slider, ranked
 documents with score bars and an optional evaluation badge. Takes **`case@1`**
 in, gives **`ranked-provisions@1`** out.
 
@@ -80,6 +80,3 @@ npm install
 npm test        # vitest component + helper tests
 npm run build   # library build to dist/
 ```
-
-Tests map to Appendix D.2 (#7, #8, #9, #13, #14, #15) and D.5 (#39, #40) of the
-BlueLab modularization plan.
