@@ -48,7 +48,12 @@ const onProvenance = (event: unknown) => console.log(event)
 | `onSearch` | `(args) => Promise<RankedProvisionsV1>` | — | Runs the search. |
 | `onListMethods` | `() => Promise<MethodOption[]>` | built-ins | Lists the methods the server offers. |
 | `groundTruth` | `{ relevant_doc_ids: string[] } \| null` | — | For the evaluation badge. |
+| `providerMode` | `'single' \| 'multi'` | `'single'` | Whether provider switching is enabled. |
+| `providers` | `RetrievalProvider[]` | — | Optional provider registry for runtime provider selection. |
+| `defaultProvider` | `string` | first provider | Preferred provider when `providers` are supplied. |
 | `showEvaluation` | `boolean` | `false` | Whether research mode is on. |
+| `emitProvenance` | `boolean` | `true` | Whether `@provenance` events are emitted. |
+| `emitErrorProvenance` | `boolean` | `false` | Whether failed retrievals emit `search_error` provenance. |
 | `defaultMethod` | `string` | `'bm25'` | Method selected on mount. |
 | `defaultThreshold` | `number` | `0.2` | Threshold on mount. |
 | `title` | `string` | — | Optional heading. |
@@ -58,7 +63,7 @@ const onProvenance = (event: unknown) => console.log(event)
 | Event | Payload | Description |
 |---|---|---|
 | `@results` | `RankedProvisionsV1` | Emitted with every search result. |
-| `@provenance` | `ProvenanceEventV1` | Emitted on load and on `change_method`. |
+| `@provenance` | `ProvenanceEventV1 & { provider_id?: string }` | Emitted on retrieval actions; includes active provider id. |
 
 ## Types
 
@@ -73,13 +78,38 @@ Pure helpers are exported too: `normaliseThreshold`, `formatThreshold`,
 `scoreColor`, `scoreWidth`, `formatScore`, `isBelowThreshold`,
 `evaluateSelection`, `formatEvalBadge`.
 
+## Provider configuration foundations
+
+This package now also exports phase-1 provider/config helpers intended for the
+`vue-legal-query-builder` extension work:
+
+- `resolveQueryBuilderConfig` - resolves defaults (`providerMode: 'single'`,
+  built-in `case-law` provider, `emitProvenance: true`).
+- `createHostProvider` - adapts host callbacks into a typed provider contract.
+- Types for provider manifests and resolved config, including single vs multi
+  provider mode.
+
+These exports are additive and do not change the existing `ProvisionRetriever`
+component API.
+
+Provider capabilities can drive control visibility. For example, set
+`supportsMethodListing: false` and `supportsThreshold: false` for API-controlled
+providers like case law to hide method/threshold controls.
+
+`resolveQueryBuilderConfig` now auto-applies those capability defaults for
+`type: 'case-law'` unless explicitly overridden.
+
 ## Development
 
 ```bash
 npm install
+npm run dev    # local demo page at http://localhost:5173
 npm test        # vitest component + helper tests
 npm run build   # library build to dist/
 ```
+
+The demo page lives in `index.html` + `demo/App.vue` and includes mock providers
+for `single` and `multi` provider mode testing.
 
 Tests map to Appendix D.2 (#7, #8, #9, #13, #14, #15) and D.5 (#39, #40) of the
 BlueLab modularization plan.

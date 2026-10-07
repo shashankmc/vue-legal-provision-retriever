@@ -18,9 +18,11 @@
     "dist"
   ],
   "scripts": {
+    "dev": "vite",
     "build": "vite build && node scripts/copy-types.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build"
   },
