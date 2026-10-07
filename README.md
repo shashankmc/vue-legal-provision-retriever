@@ -94,8 +94,33 @@ This package now also exports phase-1 provider/config helpers intended for the
   objects and throws a structured `QueryBuilderManifestValidationError`.
 - `resolveQueryBuilderConfigFromManifest` - validates a manifest and resolves
   runtime defaults in one step.
+- `createProvidersFromManifest` - validates a resolved manifest object (for
+  example from `legal-blocks`) and creates transport-backed providers.
 - Types for provider manifests and resolved config, including single vs multi
   provider mode.
+
+Example (`legal-blocks` resolves JSON, package builds providers):
+
+```ts
+import { createProvidersFromManifest } from 'vue-legal-provision-retriever'
+
+const providers = createProvidersFromManifest({
+  manifest: resolvedManifestFromLegalBlocks,
+  execute: async ({ endpoint, method, query, body }) => {
+    const url = method === 'GET' && query
+      ? `${endpoint}?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][])}`
+      : endpoint
+
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: method === 'POST' ? JSON.stringify(body ?? {}) : undefined,
+    })
+    if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+    return response.json()
+  },
+})
+```
 
 These exports are additive and do not change the existing `ProvisionRetriever`
 component API.
@@ -106,6 +131,9 @@ providers like case law to hide method/threshold controls.
 
 `resolveQueryBuilderConfig` now auto-applies those capability defaults for
 `type: 'case-law'` unless explicitly overridden.
+
+For step-by-step migration from legacy callbacks to provider + manifest wiring,
+see `docs/MIGRATION_PROVIDER_CONFIG.md`.
 
 ## Development
 
