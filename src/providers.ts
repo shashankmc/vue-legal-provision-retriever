@@ -11,7 +11,9 @@ export interface RetrievalProviderCapabilities {
 
 export interface RetrievalTransportConfig {
   searchEndpoint: string
+  searchMethod?: 'GET' | 'POST'
   methodsEndpoint?: string
+  methodsMethod?: 'GET' | 'POST'
 }
 
 export interface RetrievalProviderConfig {
@@ -72,6 +74,25 @@ export interface HostProviderOptions {
   capabilities?: RetrievalProviderCapabilities
 }
 
+export interface TransportRequest {
+  endpoint: string
+  method: 'GET' | 'POST'
+  query?: Record<string, string | number | boolean | undefined>
+  body?: unknown
+}
+
+export type TransportExecutor = <TResponse>(request: TransportRequest) => Promise<TResponse>
+
+export interface CreateTransportProviderOptions {
+  config: RetrievalProviderConfig
+  execute: TransportExecutor
+}
+
+export interface CreateProvidersFromConfigOptions {
+  config: QueryBuilderConfig | ResolvedQueryBuilderConfig
+  execute: TransportExecutor
+}
+
 const DEFAULT_CASE_LAW_PROVIDER: RetrievalProviderConfig = {
   id: 'case-law',
   label: 'Case Law',
@@ -126,4 +147,63 @@ export function createHostProvider(options: HostProviderOptions): RetrievalProvi
     search: options.search,
     listMethods: options.listMethods ?? (() => Promise.resolve([])),
   }
+}
+
+export function createTransportProvider(options: CreateTransportProviderOptions): RetrievalProvider {
+  const config = withProviderTypeDefaults(options.config)
+
+  return {
+    id: config.id,
+    label: config.label,
+    capabilities: config.capabilities,
+    listMethods: async (ctx) => {
+      if (config.capabilities?.supportsMethodListing === false || !config.transport.methodsEndpoint) {
+        return []
+      }
+
+      const methodsMethod = config.transport.methodsMethod ?? 'GET'
+      if (methodsMethod === 'GET') {
+        return options.execute<MethodOption[]>({
+          endpoint: config.transport.methodsEndpoint,
+          method: 'GET',
+          query: { case_id: ctx.case_id },
+        })
+      }
+
+      return options.execute<MethodOption[]>({
+        endpoint: config.transport.methodsEndpoint,
+        method: 'POST',
+        body: { case_id: ctx.case_id },
+      })
+    },
+    search: async (ctx) => {
+      const searchMethod = config.transport.searchMethod ?? 'POST'
+      if (searchMethod === 'GET') {
+        return options.execute<RankedProvisionsV1>({
+          endpoint: config.transport.searchEndpoint,
+          method: 'GET',
+          query: {
+            query: ctx.query,
+            method: ctx.method,
+            case_id: ctx.case_id,
+          },
+        })
+      }
+
+      return options.execute<RankedProvisionsV1>({
+        endpoint: config.transport.searchEndpoint,
+        method: 'POST',
+        body: {
+          query: ctx.query,
+          method: ctx.method,
+          case_id: ctx.case_id,
+        },
+      })
+    },
+  }
+}
+
+export function createProvidersFromConfig(options: CreateProvidersFromConfigOptions): RetrievalProvider[] {
+  const resolved = resolveQueryBuilderConfig(options.config)
+  return resolved.providers.map((provider) => createTransportProvider({ config: provider, execute: options.execute }))
 }

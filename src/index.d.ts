@@ -20,6 +20,10 @@ export type {
   ProviderSearchContext,
   RetrievalProvider,
   HostProviderOptions,
+  TransportRequest,
+  TransportExecutor,
+  CreateTransportProviderOptions,
+  CreateProvidersFromConfigOptions,
 } from "./providers";
 
 export declare function resolveQueryBuilderConfig(
@@ -29,6 +33,14 @@ export declare function resolveQueryBuilderConfig(
 export declare function createHostProvider(
   options: import("./providers").HostProviderOptions,
 ): import("./providers").RetrievalProvider;
+
+export declare function createTransportProvider(
+  options: import("./providers").CreateTransportProviderOptions,
+): import("./providers").RetrievalProvider;
+
+export declare function createProvidersFromConfig(
+  options: import("./providers").CreateProvidersFromConfigOptions,
+): import("./providers").RetrievalProvider[];
 
 export declare const DEFAULT_THRESHOLD: number;
 export declare const DEFAULT_METHOD: string;

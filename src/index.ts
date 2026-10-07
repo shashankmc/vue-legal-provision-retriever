@@ -22,9 +22,18 @@ export type {
   ProviderSearchContext,
   RetrievalProvider,
   HostProviderOptions,
+  TransportRequest,
+  TransportExecutor,
+  CreateTransportProviderOptions,
+  CreateProvidersFromConfigOptions,
 } from './providers'
 
-export { resolveQueryBuilderConfig, createHostProvider } from './providers'
+export {
+  resolveQueryBuilderConfig,
+  createHostProvider,
+  createTransportProvider,
+  createProvidersFromConfig,
+} from './providers'
 
 // Pure helpers, exported so a host can reuse them without the component.
 export {

@@ -86,6 +86,10 @@ This package now also exports phase-1 provider/config helpers intended for the
 - `resolveQueryBuilderConfig` - resolves defaults (`providerMode: 'single'`,
   built-in `case-law` provider, `emitProvenance: true`).
 - `createHostProvider` - adapts host callbacks into a typed provider contract.
+- `createTransportProvider` - builds one provider adapter from a transport
+  config + injected request executor.
+- `createProvidersFromConfig` - resolves config and creates adapters for all
+  configured providers.
 - Types for provider manifests and resolved config, including single vs multi
   provider mode.
 
