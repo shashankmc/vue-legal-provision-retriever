@@ -122,6 +122,11 @@ export interface CreateProvidersFromConfigOptions {
   execute: TransportExecutor
 }
 
+export interface CreateProvidersFromManifestOptions {
+  manifest: unknown
+  execute: TransportExecutor
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -402,4 +407,9 @@ export function createTransportProvider(options: CreateTransportProviderOptions)
 export function createProvidersFromConfig(options: CreateProvidersFromConfigOptions): RetrievalProvider[] {
   const resolved = resolveQueryBuilderConfig(options.config)
   return resolved.providers.map((provider) => createTransportProvider({ config: provider, execute: options.execute }))
+}
+
+export function createProvidersFromManifest(options: CreateProvidersFromManifestOptions): RetrievalProvider[] {
+  const resolved = resolveQueryBuilderConfigFromManifest(options.manifest)
+  return createProvidersFromConfig({ config: resolved, execute: options.execute })
 }

@@ -27,6 +27,7 @@ export type {
   TransportExecutor,
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
+  CreateProvidersFromManifestOptions,
   QueryBuilderManifestValidationError,
 } from "./providers";
 
@@ -44,6 +45,10 @@ export declare function createTransportProvider(
 
 export declare function createProvidersFromConfig(
   options: import("./providers").CreateProvidersFromConfigOptions,
+): import("./providers").RetrievalProvider[];
+
+export declare function createProvidersFromManifest(
+  options: import("./providers").CreateProvidersFromManifestOptions,
 ): import("./providers").RetrievalProvider[];
 
 export declare function validateQueryBuilderManifest(

@@ -29,6 +29,7 @@ export type {
   TransportExecutor,
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
+  CreateProvidersFromManifestOptions,
   QueryBuilderManifestValidationError,
 } from './providers'
 
@@ -37,6 +38,7 @@ export {
   createHostProvider,
   createTransportProvider,
   createProvidersFromConfig,
+  createProvidersFromManifest,
   validateQueryBuilderManifest,
   resolveQueryBuilderConfigFromManifest,
 } from './providers'

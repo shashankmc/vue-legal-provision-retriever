@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   createHostProvider,
   createProvidersFromConfig,
+  createProvidersFromManifest,
   createTransportProvider,
   QueryBuilderManifestValidationError,
   resolveQueryBuilderConfigFromManifest,
@@ -263,5 +264,62 @@ describe('provider config helpers', () => {
         expect.arrayContaining(['schemaVersion', 'providerMode', 'defaultProvider', 'providers']),
       )
     }
+  })
+
+  it('creates providers directly from a resolved legal-blocks manifest', async () => {
+    const execute = vi.fn(async (request: { endpoint: string; method: 'GET' | 'POST' }) => {
+      if (request.endpoint === '/api/provisions/methods') {
+        return [{ id: 'hybrid', label: 'Hybrid' }]
+      }
+      if (request.endpoint === '/api/provisions/search') {
+        return {
+          case_id: 'halden',
+          query: 'q',
+          method: 'hybrid',
+          threshold: 0.2,
+          corpus_version: '1.0',
+          documents: [],
+        }
+      }
+      throw new Error('unexpected endpoint')
+    })
+
+    const providers = createProvidersFromManifest({
+      execute,
+      manifest: {
+        schemaVersion: '1',
+        providerMode: 'single',
+        defaultProvider: 'provisions',
+        providers: [
+          {
+            id: 'provisions',
+            label: 'Provisions',
+            type: 'provision-retriever',
+            transport: {
+              methodsEndpoint: '/api/provisions/methods',
+              searchEndpoint: '/api/provisions/search',
+            },
+          },
+        ],
+      },
+    })
+
+    expect(providers).toHaveLength(1)
+    expect(providers[0].id).toBe('provisions')
+    expect(await providers[0].listMethods({ case_id: 'halden' })).toEqual([{ id: 'hybrid', label: 'Hybrid' }])
+  })
+
+  it('fails fast when creating providers from an invalid manifest', () => {
+    expect(() =>
+      createProvidersFromManifest({
+        execute: vi.fn(),
+        manifest: {
+          schemaVersion: '2',
+          providerMode: 'single',
+          defaultProvider: 'x',
+          providers: [],
+        },
+      }),
+    ).toThrow(QueryBuilderManifestValidationError)
   })
 })
