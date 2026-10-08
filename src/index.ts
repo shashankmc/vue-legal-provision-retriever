@@ -30,6 +30,9 @@ export type {
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
   CreateProvidersFromManifestOptions,
+  ProvisionRetrieverRuntimeOptions,
+  CreateProvisionRetrieverOptionsFromConfigOptions,
+  CreateProvisionRetrieverOptionsFromManifestOptions,
   QueryBuilderManifestValidationError,
 } from './providers'
 
@@ -39,6 +42,8 @@ export {
   createTransportProvider,
   createProvidersFromConfig,
   createProvidersFromManifest,
+  createProvisionRetrieverOptionsFromConfig,
+  createProvisionRetrieverOptionsFromManifest,
   validateQueryBuilderManifest,
   resolveQueryBuilderConfigFromManifest,
 } from './providers'

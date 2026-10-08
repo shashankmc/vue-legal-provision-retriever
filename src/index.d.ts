@@ -28,6 +28,9 @@ export type {
   CreateTransportProviderOptions,
   CreateProvidersFromConfigOptions,
   CreateProvidersFromManifestOptions,
+  ProvisionRetrieverRuntimeOptions,
+  CreateProvisionRetrieverOptionsFromConfigOptions,
+  CreateProvisionRetrieverOptionsFromManifestOptions,
   QueryBuilderManifestValidationError,
 } from "./providers";
 
@@ -50,6 +53,14 @@ export declare function createProvidersFromConfig(
 export declare function createProvidersFromManifest(
   options: import("./providers").CreateProvidersFromManifestOptions,
 ): import("./providers").RetrievalProvider[];
+
+export declare function createProvisionRetrieverOptionsFromConfig(
+  options: import("./providers").CreateProvisionRetrieverOptionsFromConfigOptions,
+): import("./providers").ProvisionRetrieverRuntimeOptions;
+
+export declare function createProvisionRetrieverOptionsFromManifest(
+  options: import("./providers").CreateProvisionRetrieverOptionsFromManifestOptions,
+): import("./providers").ProvisionRetrieverRuntimeOptions;
 
 export declare function validateQueryBuilderManifest(
   manifest: unknown,

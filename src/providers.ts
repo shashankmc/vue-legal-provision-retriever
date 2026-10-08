@@ -127,6 +127,26 @@ export interface CreateProvidersFromManifestOptions {
   execute: TransportExecutor
 }
 
+export interface ProvisionRetrieverRuntimeOptions {
+  providerMode: ProviderMode
+  defaultProvider: string
+  providers: RetrievalProvider[]
+  showEvaluation: boolean
+  emitProvenance: boolean
+  defaultMethod?: string
+  defaultThreshold?: number
+}
+
+export interface CreateProvisionRetrieverOptionsFromConfigOptions {
+  config: QueryBuilderConfig | ResolvedQueryBuilderConfig
+  execute: TransportExecutor
+}
+
+export interface CreateProvisionRetrieverOptionsFromManifestOptions {
+  manifest: unknown
+  execute: TransportExecutor
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -412,4 +432,29 @@ export function createProvidersFromConfig(options: CreateProvidersFromConfigOpti
 export function createProvidersFromManifest(options: CreateProvidersFromManifestOptions): RetrievalProvider[] {
   const resolved = resolveQueryBuilderConfigFromManifest(options.manifest)
   return createProvidersFromConfig({ config: resolved, execute: options.execute })
+}
+
+export function createProvisionRetrieverOptionsFromConfig(
+  options: CreateProvisionRetrieverOptionsFromConfigOptions,
+): ProvisionRetrieverRuntimeOptions {
+  const resolved = resolveQueryBuilderConfig(options.config)
+  const providers = createProvidersFromConfig({ config: resolved, execute: options.execute })
+  const selected = resolved.providers.find((provider) => provider.id === resolved.defaultProvider)
+
+  return {
+    providerMode: resolved.providerMode,
+    defaultProvider: resolved.defaultProvider,
+    providers,
+    showEvaluation: resolved.features.showEvaluation,
+    emitProvenance: resolved.features.emitProvenance,
+    defaultMethod: selected?.defaults?.method,
+    defaultThreshold: selected?.defaults?.threshold,
+  }
+}
+
+export function createProvisionRetrieverOptionsFromManifest(
+  options: CreateProvisionRetrieverOptionsFromManifestOptions,
+): ProvisionRetrieverRuntimeOptions {
+  const resolved = resolveQueryBuilderConfigFromManifest(options.manifest)
+  return createProvisionRetrieverOptionsFromConfig({ config: resolved, execute: options.execute })
 }

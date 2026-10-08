@@ -96,6 +96,10 @@ This package now also exports phase-1 provider/config helpers intended for the
   runtime defaults in one step.
 - `createProvidersFromManifest` - validates a resolved manifest object (for
   example from `legal-blocks`) and creates transport-backed providers.
+- `createProvisionRetrieverOptionsFromConfig` /
+  `createProvisionRetrieverOptionsFromManifest` - return ready-to-bind
+  `ProvisionRetriever` props (provider mode/default provider/providers +
+  feature flags and default method/threshold).
 - Types for provider manifests and resolved config, including single vs multi
   provider mode.
 
@@ -120,6 +124,20 @@ const providers = createProvidersFromManifest({
     return response.json()
   },
 })
+```
+
+Or build bind-ready props in one step:
+
+```ts
+import { createProvisionRetrieverOptionsFromManifest } from 'vue-legal-provision-retriever'
+
+const retrieverOptions = createProvisionRetrieverOptionsFromManifest({
+  manifest: resolvedManifestFromLegalBlocks,
+  execute,
+})
+
+// Then bind:
+// <ProvisionRetriever v-bind="retrieverOptions" :case="caseData" />
 ```
 
 These exports are additive and do not change the existing `ProvisionRetriever`

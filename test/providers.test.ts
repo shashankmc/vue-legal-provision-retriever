@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   createHostProvider,
+  createProvisionRetrieverOptionsFromConfig,
+  createProvisionRetrieverOptionsFromManifest,
   createProvidersFromConfig,
   createProvidersFromManifest,
   createTransportProvider,
@@ -321,5 +323,60 @@ describe('provider config helpers', () => {
         },
       }),
     ).toThrow(QueryBuilderManifestValidationError)
+  })
+
+  it('builds ProvisionRetriever runtime options from config', () => {
+    const runtime = createProvisionRetrieverOptionsFromConfig({
+      execute: vi.fn(),
+      config: {
+        providerMode: 'single',
+        defaultProvider: 'provisions',
+        features: {
+          emitProvenance: true,
+          showEvaluation: true,
+        },
+        providers: [
+          {
+            id: 'provisions',
+            label: 'Provisions',
+            type: 'provision-retriever',
+            defaults: { method: 'sbert', threshold: 0.35 },
+            transport: { searchEndpoint: '/api/provisions/search' },
+          },
+        ],
+      },
+    })
+
+    expect(runtime.providerMode).toBe('single')
+    expect(runtime.defaultProvider).toBe('provisions')
+    expect(runtime.showEvaluation).toBe(true)
+    expect(runtime.emitProvenance).toBe(true)
+    expect(runtime.defaultMethod).toBe('sbert')
+    expect(runtime.defaultThreshold).toBe(0.35)
+    expect(runtime.providers).toHaveLength(1)
+  })
+
+  it('builds ProvisionRetriever runtime options from manifest', () => {
+    const runtime = createProvisionRetrieverOptionsFromManifest({
+      execute: vi.fn(),
+      manifest: {
+        schemaVersion: '1',
+        providerMode: 'single',
+        defaultProvider: 'case-law',
+        providers: [
+          {
+            id: 'case-law',
+            label: 'Case Law',
+            type: 'case-law',
+            transport: { searchEndpoint: '/api/case-law/search' },
+          },
+        ],
+      },
+    })
+
+    expect(runtime.defaultProvider).toBe('case-law')
+    expect(runtime.providers[0].capabilities?.supportsMethodListing).toBe(false)
+    expect(runtime.providers[0].capabilities?.supportsThreshold).toBe(false)
+    expect(runtime.emitProvenance).toBe(true)
   })
 })
