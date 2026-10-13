@@ -4,10 +4,73 @@ import type { CaseV1, RankedProvisionsV1, ProvenanceEventV1 } from "legal-provis
 export type {
   ProvisionRetrieverProps,
   MethodOption,
+  ProbeDependencies,
   GroundTruth,
   RetrievalResults,
   RetrievalProvenance,
 } from "./components/types";
+
+export type {
+  ProviderMode,
+  RetrievalProviderCapabilities,
+  RetrievalTransportConfig,
+  RetrievalProviderConfig,
+  QueryBuilderConfig,
+  QueryBuilderManifestV1,
+  QueryBuilderManifestV2,
+  QueryBuilderManifest,
+  ValidationIssue,
+  ResolvedQueryBuilderConfig,
+  ProviderContext,
+  ProviderSearchContext,
+  RetrievalProvider,
+  HostProviderOptions,
+  TransportRequest,
+  TransportExecutor,
+  CreateTransportProviderOptions,
+  CreateProvidersFromConfigOptions,
+  CreateProvidersFromManifestOptions,
+  ProvisionRetrieverRuntimeOptions,
+  CreateProvisionRetrieverOptionsFromConfigOptions,
+  CreateProvisionRetrieverOptionsFromManifestOptions,
+  QueryBuilderManifestValidationError,
+} from "./providers";
+
+export declare function resolveQueryBuilderConfig(
+  input?: import("./providers").QueryBuilderConfig,
+): import("./providers").ResolvedQueryBuilderConfig;
+
+export declare function createHostProvider(
+  options: import("./providers").HostProviderOptions,
+): import("./providers").RetrievalProvider;
+
+export declare function createTransportProvider(
+  options: import("./providers").CreateTransportProviderOptions,
+): import("./providers").RetrievalProvider;
+
+export declare function createProvidersFromConfig(
+  options: import("./providers").CreateProvidersFromConfigOptions,
+): import("./providers").RetrievalProvider[];
+
+export declare function createProvidersFromManifest(
+  options: import("./providers").CreateProvidersFromManifestOptions,
+): import("./providers").RetrievalProvider[];
+
+export declare function createProvisionRetrieverOptionsFromConfig(
+  options: import("./providers").CreateProvisionRetrieverOptionsFromConfigOptions,
+): import("./providers").ProvisionRetrieverRuntimeOptions;
+
+export declare function createProvisionRetrieverOptionsFromManifest(
+  options: import("./providers").CreateProvisionRetrieverOptionsFromManifestOptions,
+): import("./providers").ProvisionRetrieverRuntimeOptions;
+
+export declare function validateQueryBuilderManifest(
+  manifest: unknown,
+): import("./providers").QueryBuilderManifest;
+
+export declare function resolveQueryBuilderConfigFromManifest(
+  manifest: unknown,
+): import("./providers").ResolvedQueryBuilderConfig;
 
 export declare const DEFAULT_THRESHOLD: number;
 export declare const DEFAULT_METHOD: string;
