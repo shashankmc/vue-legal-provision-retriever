@@ -252,7 +252,7 @@ describe('provider config helpers', () => {
   it('throws structured manifest validation errors', () => {
     try {
       validateQueryBuilderManifest({
-        schemaVersion: '2',
+        schemaVersion: '3',
         providerMode: 'many',
         defaultProvider: '',
         providers: [],

@@ -6,6 +6,7 @@ export { ProvisionRetriever }
 export type {
   ProvisionRetrieverProps,
   MethodOption,
+  ProbeDependencies,
   GroundTruth,
   RetrievalResults,
   RetrievalProvenance,

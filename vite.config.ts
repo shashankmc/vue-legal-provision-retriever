@@ -18,11 +18,12 @@ export default defineConfig({
       // The port types are a declared dependency and must stay a real import:
       // a consumer comparing against legal-provision-types should not end up
       // with a second copy baked into this bundle.
-      external: ['vue', 'legal-provision-types'],
+      external: ['vue', 'legal-provision-types', 'legal-retrieval-types'],
       output: {
         globals: {
           vue: 'Vue',
           'legal-provision-types': 'LegalProvisionTypes',
+          'legal-retrieval-types': 'LegalRetrievalTypes',
         },
       },
     },

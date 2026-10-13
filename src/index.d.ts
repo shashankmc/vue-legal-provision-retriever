@@ -4,6 +4,7 @@ import type { CaseV1, RankedProvisionsV1, ProvenanceEventV1 } from "legal-provis
 export type {
   ProvisionRetrieverProps,
   MethodOption,
+  ProbeDependencies,
   GroundTruth,
   RetrievalResults,
   RetrievalProvenance,
@@ -16,6 +17,7 @@ export type {
   RetrievalProviderConfig,
   QueryBuilderConfig,
   QueryBuilderManifestV1,
+  QueryBuilderManifestV2,
   QueryBuilderManifest,
   ValidationIssue,
   ResolvedQueryBuilderConfig,
