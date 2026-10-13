@@ -271,4 +271,85 @@ describe('ProvisionRetriever', () => {
 
     expect(changeProviderEvent?.provider_id).toBe('provisions')
   })
+
+  it('disables a method whose backend dependency is unmet', async () => {
+    const onSearch = vi.fn().mockResolvedValue(ranked(0.42))
+    const wrapper = mountRetriever({
+      onSearch,
+      onListMethods: vi.fn().mockResolvedValue([
+        { id: 'bm25', label: 'BM25' },
+        {
+          id: 'sbert',
+          label: 'SBERT',
+          available: false,
+          unavailableReason: 'model not configured',
+          dependencies: [
+            { id: 'sbert-model', label: 'Sentence-BERT model', kind: 'model', configKeys: ['SBERT_MODEL_PATH'] },
+          ],
+        },
+      ]),
+    })
+    await flushPromises()
+
+    const sbert = wrapper.findAll('.method-btn').find((b) => b.text() === 'SBERT')!
+    expect(sbert.attributes('disabled')).toBeDefined()
+    expect(sbert.classes()).toContain('unavailable')
+    expect(wrapper.find('[data-test="dependency-notice"]').exists()).toBe(true)
+    expect(wrapper.find('[data-blocked-method="sbert"]').text()).toContain('model not configured')
+
+    const callsBefore = onSearch.mock.calls.length
+    await sbert.trigger('click')
+    await flushPromises()
+    expect(onSearch.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('falls back to an available method when the default is unavailable', async () => {
+    const wrapper = mountRetriever({
+      onListMethods: vi.fn().mockResolvedValue([
+        { id: 'bm25', label: 'BM25', available: false, unavailableReason: 'index missing' },
+        { id: 'sbert', label: 'SBERT' },
+      ]),
+    })
+    await flushPromises()
+
+    expect(wrapper.find('.method-btn.active').text()).toBe('SBERT')
+  })
+
+  it('lets a host probe refresh method availability', async () => {
+    const probe = vi.fn(async (methods: { id: string }[]) =>
+      methods.map((m) => (m.id === 'sbert' ? { ...m, available: false, unavailableReason: 'no model' } : m)),
+    )
+    const wrapper = mountRetriever({
+      onProbeDependencies: probe,
+      onListMethods: vi.fn().mockResolvedValue([
+        { id: 'bm25', label: 'BM25' },
+        { id: 'sbert', label: 'SBERT', dependencies: [{ id: 'sbert-model', label: 'Sentence-BERT model', kind: 'model' }] },
+      ]),
+    })
+    await flushPromises()
+
+    expect(probe).toHaveBeenCalledTimes(1)
+    const sbert = wrapper.findAll('.method-btn').find((b) => b.text() === 'SBERT')!
+    expect(sbert.attributes('disabled')).toBeDefined()
+  })
+
+  it('shows a backend dependency scaffold on demand', async () => {
+    const wrapper = mountRetriever({
+      onListMethods: vi.fn().mockResolvedValue([
+        { id: 'bm25', label: 'BM25' },
+        {
+          id: 'sbert',
+          label: 'SBERT',
+          dependencies: [
+            { id: 'sbert-model', label: 'Sentence-BERT model', kind: 'model', configKeys: ['SBERT_MODEL_PATH'] },
+          ],
+        },
+      ]),
+    })
+    await flushPromises()
+
+    expect(wrapper.find('[data-test="dependency-scaffold"]').exists()).toBe(false)
+    await wrapper.find('.dependency-toggle').trigger('click')
+    expect(wrapper.find('[data-test="dependency-scaffold"]').text()).toContain('SBERT_MODEL_PATH=')
+  })
 })

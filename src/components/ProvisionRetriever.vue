@@ -19,8 +19,12 @@
           :key="m.id"
           type="button"
           class="method-btn"
-          :class="{ active: m.id === method }"
+          :class="{ active: m.id === method, unavailable: m.available === false }"
           :data-method="m.id"
+          :disabled="m.available === false"
+          :title="m.available === false
+            ? (m.unavailableReason || `Requires: ${dependencyHint(m)}`)
+            : (m.dependencies?.length ? `Requires: ${dependencyHint(m)}` : undefined)"
           @click="setMethod(m.id)"
         >
           {{ m.label }}
@@ -47,6 +51,18 @@
           data-test="eval-badge"
         >{{ formatEvalBadge(evalMetrics) }}</span>
       </div>
+    </div>
+
+    <div v-if="hasDependencies" class="dependency-notice" data-test="dependency-notice">
+      <button type="button" class="dependency-toggle" @click="showScaffold = !showScaffold">
+        {{ showScaffold ? '▾' : '▸' }} Backend dependencies
+      </button>
+      <ul v-if="blockedMethods.length" class="dependency-blocked">
+        <li v-for="m in blockedMethods" :key="m.id" :data-blocked-method="m.id">
+          <strong>{{ m.label }}</strong> unavailable — {{ m.unavailableReason || `requires ${dependencyHint(m)}` }}
+        </li>
+      </ul>
+      <pre v-if="showScaffold" class="dependency-scaffold" data-test="dependency-scaffold">{{ scaffold }}</pre>
     </div>
 
     <div v-if="loading" class="loading">Searching…</div>
@@ -105,6 +121,12 @@ import {
 } from './retrieval'
 import { provideHostCallbacks } from './hostCallbacks'
 import type { MethodOption, ProvisionRetrieverProps, RetrievalProvenance } from './types'
+import {
+  buildDependencyScaffold,
+  dependencyHint,
+  methodsWithDependencies,
+  unmetDependencies,
+} from 'legal-retrieval-types'
 
 const props = withDefaults(defineProps<ProvisionRetrieverProps>(), {
   defaultMethod: DEFAULT_METHOD,
@@ -160,6 +182,21 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 let searchRequestId = 0
 
+const showScaffold = ref(false)
+const hasDependencies = computed(() => methodsWithDependencies(methods.value).length > 0)
+const blockedMethods = computed(() => methods.value.filter((m) => unmetDependencies(m).length > 0))
+const scaffold = computed(() => buildDependencyScaffold(methods.value))
+
+/** Let the host refresh method availability after the list is loaded. */
+async function applyProbe(listed: MethodOption[]): Promise<MethodOption[]> {
+  if (!props.onProbeDependencies) return listed
+  try {
+    return await props.onProbeDependencies(listed)
+  } catch {
+    return listed
+  }
+}
+
 provideHostCallbacks({
   search: (args) => props.onSearch?.(args) ?? Promise.reject(new Error('onSearch is not set')),
   listMethods: () => props.onListMethods?.() ?? Promise.resolve(builtInMethods),
@@ -192,17 +229,25 @@ async function refreshProviderState() {
     return
   }
 
+  let listed: MethodOption[]
   try {
-    const listedMethods = await activeProvider.value.listMethods({
+    const fromServer = await activeProvider.value.listMethods({
       case_id: props.case?.case_id,
     })
-    methods.value = listedMethods.length > 0 ? listedMethods : usingProviderRegistry.value ? [] : builtInMethods
-    // BM25 stays the default when offered (D.2 #7).
-    if (!methods.value.some((m) => m.id === method.value) && methods.value.length > 0) {
-      method.value = methods.value.find((m) => m.id === DEFAULT_METHOD)?.id ?? methods.value[0].id
-    }
+    listed = fromServer.length > 0 ? fromServer : usingProviderRegistry.value ? [] : builtInMethods
   } catch {
-    methods.value = usingProviderRegistry.value ? [] : builtInMethods
+    listed = usingProviderRegistry.value ? [] : builtInMethods
+  }
+
+  methods.value = await applyProbe(listed)
+
+  // BM25 stays the default when offered and available (D.2 #7).
+  const isUsable = (m: MethodOption) => m.available !== false
+  if (!methods.value.some((m) => m.id === method.value && isUsable(m)) && methods.value.length > 0) {
+    method.value =
+      methods.value.find((m) => m.id === DEFAULT_METHOD && isUsable(m))?.id ??
+      methods.value.find(isUsable)?.id ??
+      methods.value[0].id
   }
 }
 
@@ -256,6 +301,8 @@ async function runSearch(action: string) {
 
 function setMethod(id: string) {
   if (id === method.value) return
+  const target = methods.value.find((m) => m.id === id)
+  if (target?.available === false) return
   method.value = id
   runSearch('change_method')
 }
@@ -313,6 +360,38 @@ async function onProviderChange(event: Event) {
   background: #1b6b93;
   color: #fff;
   border-color: #1b6b93;
+}
+.method-btn.unavailable {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.dependency-notice {
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.dependency-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #1b6b93;
+  cursor: pointer;
+  font-size: 12px;
+}
+.dependency-blocked {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #b45309;
+}
+.dependency-scaffold {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: #0f172a;
+  color: #cbd5e1;
+  border-radius: 6px;
+  font-size: 11px;
+  overflow: auto;
+  white-space: pre;
 }
 .provider-select {
   min-width: 150px;

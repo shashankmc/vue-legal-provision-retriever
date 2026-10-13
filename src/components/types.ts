@@ -3,13 +3,23 @@ import type {
   RankedProvisionsV1,
   ProvenanceEventV1,
 } from 'legal-provision-types'
+import type { DependencyDescriptor } from 'legal-retrieval-types'
 import type { ProviderMode, RetrievalProvider } from '../providers'
 
 /** One retrieval method, as the server lists it. */
 export interface MethodOption {
   id: string
   label: string
+  /** Backend dependencies this method needs before it can run. */
+  dependencies?: DependencyDescriptor[]
+  /** Live availability, when the server or a probe has reported it. Undefined = unknown. */
+  available?: boolean
+  /** Why it is unavailable, when known. */
+  unavailableReason?: string
 }
+
+/** A host probe that refreshes method availability. Receives the listed methods. */
+export type ProbeDependencies = (methods: MethodOption[]) => Promise<MethodOption[]>
 
 /** Ground truth for the evaluation badge (research mode). */
 export interface GroundTruth {
@@ -25,6 +35,12 @@ export interface ProvisionRetrieverProps {
   onSearch?: (args: { query: string; method: string; case_id?: string }) => Promise<RankedProvisionsV1>
   /** Lists the retrieval methods the server offers. Called once on mount. */
   onListMethods?: () => Promise<MethodOption[]>
+  /**
+   * Refreshes method availability after the list is loaded. The host probes its
+   * backend and returns the methods with `available` / `unavailableReason` set.
+   * The package never calls the backend itself.
+   */
+  onProbeDependencies?: ProbeDependencies
   /** Ground truth, when research mode is on behind a `groundTruth` flag. */
   groundTruth?: GroundTruth | null
   /** Optional provider mode override (single/multi). */
