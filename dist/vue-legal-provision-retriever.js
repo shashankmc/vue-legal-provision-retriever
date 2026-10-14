@@ -1,7 +1,7 @@
-import { provide as le, defineComponent as de, computed as _, ref as y, onMounted as ce, openBlock as s, createElementBlock as i, toDisplayString as u, createCommentVNode as b, createElementVNode as c, Fragment as C, renderList as F, unref as m, normalizeClass as I, createTextVNode as j, normalizeStyle as A } from "vue";
-import { withProviderTypeDefaults as ue, resolveQueryBuilderConfig as X, resolveQueryBuilderConfigFromManifest as Y, methodsWithDependencies as ve, unmetDependencies as he, buildDependencyScaffold as fe, dependencyHint as O } from "legal-retrieval-types";
-import { resolveQueryBuilderConfig as it, resolveQueryBuilderConfigFromManifest as lt, validateQueryBuilderManifest as dt } from "legal-retrieval-types";
-function pe(o) {
+import { provide as ce, defineComponent as ve, computed as _, ref as m, onMounted as he, openBlock as s, createElementBlock as l, toDisplayString as u, createCommentVNode as y, createElementVNode as d, withKeys as fe, Fragment as F, renderList as B, unref as b, normalizeClass as $, createTextVNode as K, normalizeStyle as W } from "vue";
+import { withProviderTypeDefaults as pe, resolveQueryBuilderConfig as Z, resolveQueryBuilderConfigFromManifest as ee, methodsWithDependencies as _e, unmetDependencies as ye, buildDependencyScaffold as be, dependencyHint as O } from "legal-retrieval-types";
+import { resolveQueryBuilderConfig as ht, resolveQueryBuilderConfigFromManifest as ft, validateQueryBuilderManifest as pt } from "legal-retrieval-types";
+function me(o) {
   return {
     id: o.id,
     label: o.label,
@@ -10,143 +10,148 @@ function pe(o) {
     listMethods: o.listMethods ?? (() => Promise.resolve([]))
   };
 }
-function _e(o) {
-  const a = ue(o.config);
+function ge(o) {
+  const n = pe(o.config);
   return {
-    id: a.id,
-    label: a.label,
-    capabilities: a.capabilities,
-    listMethods: async (e) => {
-      var d;
-      return ((d = a.capabilities) == null ? void 0 : d.supportsMethodListing) === !1 || !a.transport.methodsEndpoint ? [] : (a.transport.methodsMethod ?? "GET") === "GET" ? o.execute({
-        endpoint: a.transport.methodsEndpoint,
+    id: n.id,
+    label: n.label,
+    capabilities: n.capabilities,
+    listMethods: async (i) => {
+      var c;
+      return ((c = n.capabilities) == null ? void 0 : c.supportsMethodListing) === !1 || !n.transport.methodsEndpoint ? [] : (n.transport.methodsMethod ?? "GET") === "GET" ? o.execute({
+        endpoint: n.transport.methodsEndpoint,
         method: "GET",
-        query: { case_id: e.case_id }
+        query: { case_id: i.case_id }
       }) : o.execute({
-        endpoint: a.transport.methodsEndpoint,
+        endpoint: n.transport.methodsEndpoint,
         method: "POST",
-        body: { case_id: e.case_id }
+        body: { case_id: i.case_id }
       });
     },
-    search: async (e) => (a.transport.searchMethod ?? "POST") === "GET" ? o.execute({
-      endpoint: a.transport.searchEndpoint,
+    search: async (i) => (n.transport.searchMethod ?? "POST") === "GET" ? o.execute({
+      endpoint: n.transport.searchEndpoint,
       method: "GET",
       query: {
-        query: e.query,
-        method: e.method,
-        case_id: e.case_id
+        query: i.query,
+        method: i.method,
+        case_id: i.case_id
       }
     }) : o.execute({
-      endpoint: a.transport.searchEndpoint,
+      endpoint: n.transport.searchEndpoint,
       method: "POST",
       body: {
-        query: e.query,
-        method: e.method,
-        case_id: e.case_id
+        query: i.query,
+        method: i.method,
+        case_id: i.case_id
       }
     })
   };
 }
-function Z(o) {
-  return X(o.config).providers.map((e) => _e({ config: e, execute: o.execute }));
+function te(o) {
+  return Z(o.config).providers.map((i) => ge({ config: i, execute: o.execute }));
 }
-function ot(o) {
-  const a = Y(o.manifest);
-  return Z({ config: a, execute: o.execute });
+function it(o) {
+  const n = ee(o.manifest);
+  return te({ config: n, execute: o.execute });
 }
-function me(o) {
-  var d, P;
-  const a = X(o.config), e = Z({ config: a, execute: o.execute }), l = a.providers.find((v) => v.id === a.defaultProvider);
+function Pe(o) {
+  var c, f;
+  const n = Z(o.config), i = te({ config: n, execute: o.execute }), t = n.providers.find((g) => g.id === n.defaultProvider);
   return {
-    providerMode: a.providerMode,
-    defaultProvider: a.defaultProvider,
-    providers: e,
-    showEvaluation: a.features.showEvaluation,
-    emitProvenance: a.features.emitProvenance,
-    defaultMethod: (d = l == null ? void 0 : l.defaults) == null ? void 0 : d.method,
-    defaultThreshold: (P = l == null ? void 0 : l.defaults) == null ? void 0 : P.threshold
+    providerMode: n.providerMode,
+    defaultProvider: n.defaultProvider,
+    providers: i,
+    showEvaluation: n.features.showEvaluation,
+    emitProvenance: n.features.emitProvenance,
+    defaultMethod: (c = t == null ? void 0 : t.defaults) == null ? void 0 : c.method,
+    defaultThreshold: (f = t == null ? void 0 : t.defaults) == null ? void 0 : f.threshold
   };
 }
-function rt(o) {
-  const a = Y(o.manifest);
-  return me({ config: a, execute: o.execute });
+function dt(o) {
+  const n = ee(o.manifest);
+  return Pe({ config: n, execute: o.execute });
 }
-const ee = 0.2, W = "bm25";
-function $(o) {
-  if (Number.isNaN(o)) return ee;
-  const a = Math.min(1, Math.max(0, o));
-  return Math.round(a * 100) / 100;
-}
-function be(o) {
-  return $(o).toFixed(2);
-}
-function J(o) {
-  return o > 0.5 ? "#2e7d5b" : o > 0.3 ? "#1b6b93" : "#e8a838";
-}
-function ge(o) {
-  return Math.max(o * 100, 2);
-}
-function ye(o) {
-  return o.toFixed(3);
-}
-function K(o, a) {
-  return o < a;
-}
-function Pe(o, a) {
-  const e = (a == null ? void 0 : a.relevant_doc_ids) ?? [], l = new Set(o);
-  if (e.length === 0)
-    return { precision: 0, recall: 0, f1: 0, count: l.size, hasGroundTruth: !1 };
-  const d = new Set(e), P = [...l].filter((R) => d.has(R)).length, v = l.size > 0 ? P / l.size : 0, f = d.size > 0 ? P / d.size : 0, M = v + f > 0 ? 2 * v * f / (v + f) : 0;
-  return { precision: v, recall: f, f1: M, count: l.size, hasGroundTruth: !0 };
+const oe = 0.2, J = "bm25";
+function z(o) {
+  if (Number.isNaN(o)) return oe;
+  const n = Math.min(1, Math.max(0, o));
+  return Math.round(n * 100) / 100;
 }
 function Me(o) {
+  return z(o).toFixed(2);
+}
+function X(o) {
+  return o > 0.5 ? "#2e7d5b" : o > 0.3 ? "#1b6b93" : "#e8a838";
+}
+function ke(o) {
+  return Math.max(o * 100, 2);
+}
+function Se(o) {
+  return o.toFixed(3);
+}
+function Y(o, n) {
+  return o < n;
+}
+function Te(o, n) {
+  const i = (n == null ? void 0 : n.relevant_doc_ids) ?? [], t = new Set(o);
+  if (i.length === 0)
+    return { precision: 0, recall: 0, f1: 0, count: t.size, hasGroundTruth: !1 };
+  const c = new Set(i), f = [...t].filter((k) => c.has(k)).length, g = t.size > 0 ? f / t.size : 0, h = c.size > 0 ? f / c.size : 0, P = g + h > 0 ? 2 * g * h / (g + h) : 0;
+  return { precision: g, recall: h, f1: P, count: t.size, hasGroundTruth: !0 };
+}
+function we(o) {
   return `P=${o.precision.toFixed(2)} R=${o.recall.toFixed(2)} F1=${o.f1.toFixed(2)} (${o.count} selected)`;
 }
-const ke = Symbol("legal-provision-retriever-host");
-function Te(o) {
-  le(ke, o);
+const Ee = Symbol("legal-provision-retriever-host");
+function xe(o) {
+  ce(Ee, o);
 }
-const we = { class: "provision-retriever" }, Ee = {
+const Ce = { class: "provision-retriever" }, qe = {
   key: 0,
   class: "title"
-}, Se = { class: "controls" }, xe = {
+}, Fe = { class: "controls" }, Be = {
   key: 0,
-  class: "control-group"
-}, Ce = ["value"], Fe = ["value"], Re = {
+  class: "control-group query-group"
+}, De = ["value"], Re = {
   key: 1,
   class: "control-group"
-}, Be = ["data-method", "disabled", "title", "onClick"], De = {
+}, Ie = ["value"], Le = ["value"], $e = {
   key: 2,
   class: "control-group"
-}, qe = ["value"], Le = { class: "threshold-value" }, Ie = { class: "control-group" }, Oe = {
+}, Oe = ["data-method", "disabled", "title", "onClick"], ze = {
+  key: 3,
+  class: "control-group"
+}, Ge = ["value"], Ne = { class: "threshold-value" }, He = { class: "control-group" }, Qe = {
   key: 0,
   class: "eval-badge",
   "data-test": "eval-badge"
-}, $e = {
+}, Ve = {
   key: 1,
   class: "dependency-notice",
   "data-test": "dependency-notice"
-}, ze = {
+}, Ue = {
   key: 0,
   class: "dependency-blocked"
-}, Ge = ["data-blocked-method"], Ne = {
+}, je = ["data-blocked-method"], Ae = {
   key: 1,
   class: "dependency-scaffold",
   "data-test": "dependency-scaffold"
-}, He = {
+}, Ke = {
   key: 2,
   class: "loading"
-}, Qe = {
+}, We = {
   key: 3,
   class: "error"
-}, Ve = {
+}, Je = {
   key: 4,
   class: "doc-list"
-}, Ue = ["data-doc-id"], je = { class: "doc-title" }, Ae = { class: "doc-meta" }, We = { class: "score-row" }, Je = { class: "score-bar-bg" }, Ke = { class: "top-prov" }, Xe = /* @__PURE__ */ de({
+}, Xe = ["data-doc-id"], Ye = { class: "doc-title" }, Ze = { class: "doc-meta" }, et = { class: "score-row" }, tt = { class: "score-bar-bg" }, ot = { class: "top-prov" }, rt = /* @__PURE__ */ ve({
   __name: "ProvisionRetriever",
   props: {
     title: {},
     case: {},
+    query: {},
+    autoSearch: { type: Boolean, default: !0 },
     onSearch: {},
     onListMethods: {},
     onProbeDependencies: {},
@@ -157,267 +162,286 @@ const we = { class: "provision-retriever" }, Ee = {
     showEvaluation: { type: Boolean, default: !1 },
     emitProvenance: { type: Boolean, default: !0 },
     emitErrorProvenance: { type: Boolean, default: !1 },
-    defaultMethod: { default: W },
-    defaultThreshold: { default: ee }
+    defaultMethod: { default: J },
+    defaultThreshold: { default: oe }
   },
   emits: ["results", "provenance"],
-  setup(o, { emit: a }) {
-    const e = o, l = a, d = [
+  setup(o, { expose: n, emit: i }) {
+    var j;
+    const t = o, c = i, f = [
       { id: "tfidf", label: "TF-IDF" },
       { id: "bm25", label: "BM25" },
       { id: "sbert", label: "SBERT" }
-    ], P = pe({
+    ], g = me({
       id: "case-law",
       label: "Case Law",
       search: (r) => {
-        var n;
-        return ((n = e.onSearch) == null ? void 0 : n.call(e, r)) ?? Promise.reject(new Error("onSearch is not set"));
+        var a;
+        return ((a = t.onSearch) == null ? void 0 : a.call(t, r)) ?? Promise.reject(new Error("onSearch is not set"));
       },
       listMethods: () => {
         var r;
-        return ((r = e.onListMethods) == null ? void 0 : r.call(e)) ?? Promise.resolve(d);
+        return ((r = t.onListMethods) == null ? void 0 : r.call(t)) ?? Promise.resolve(f);
       }
-    }), v = _(
+    }), h = _(
       () => {
         var r;
-        return (r = e.providers) != null && r.length ? e.providers : [P];
+        return (r = t.providers) != null && r.length ? t.providers : [g];
       }
-    ), f = y(e.defaultProvider ?? v.value[0].id), M = _(() => v.value.find((r) => r.id === f.value) ?? v.value[0]), R = _(() => e.providerMode === "multi" && v.value.length > 1), z = _(() => {
+    ), P = m(t.defaultProvider ?? h.value[0].id), k = _(() => h.value.find((r) => r.id === P.value) ?? h.value[0]), re = _(() => t.providerMode === "multi" && h.value.length > 1), G = _(() => {
       var r;
-      return (((r = e.providers) == null ? void 0 : r.length) ?? 0) > 0;
-    }), te = _(() => h.value.length > 0), B = _(() => {
+      return (((r = t.providers) == null ? void 0 : r.length) ?? 0) > 0;
+    }), ae = _(() => v.value.length > 0), D = _(() => {
       var r;
-      return ((r = M.value.capabilities) == null ? void 0 : r.supportsThreshold) !== !1;
-    }), h = y(d), k = y(e.defaultMethod), T = y($(e.defaultThreshold)), w = y([]), D = y(!1), E = y(null);
-    let S = 0;
-    const x = y(!1), oe = _(() => ve(h.value).length > 0), G = _(() => h.value.filter((r) => he(r).length > 0)), re = _(() => fe(h.value));
-    async function ae(r) {
-      if (!e.onProbeDependencies) return r;
+      return ((r = k.value.capabilities) == null ? void 0 : r.supportsThreshold) !== !1;
+    }), v = m(f), S = m(t.defaultMethod), R = m(t.query ?? ((j = t.case) == null ? void 0 : j.fact_pattern) ?? ""), T = m(z(t.defaultThreshold)), w = m([]), I = m(!1), x = m(null);
+    let C = 0;
+    const q = m(!1), ne = _(() => _e(v.value).length > 0), N = _(() => v.value.filter((r) => ye(r).length > 0)), se = _(() => be(v.value));
+    async function le(r) {
+      if (!t.onProbeDependencies) return r;
       try {
-        return await e.onProbeDependencies(r);
+        return await t.onProbeDependencies(r);
       } catch {
         return r;
       }
     }
-    Te({
+    xe({
       search: (r) => {
-        var n;
-        return ((n = e.onSearch) == null ? void 0 : n.call(e, r)) ?? Promise.reject(new Error("onSearch is not set"));
+        var a;
+        return ((a = t.onSearch) == null ? void 0 : a.call(t, r)) ?? Promise.reject(new Error("onSearch is not set"));
       },
       listMethods: () => {
         var r;
-        return ((r = e.onListMethods) == null ? void 0 : r.call(e)) ?? Promise.resolve(d);
+        return ((r = t.onListMethods) == null ? void 0 : r.call(t)) ?? Promise.resolve(f);
       }
     });
-    const N = _(
-      () => Pe(
-        w.value.filter((r) => !B.value || !K(r.score, T.value)).map((r) => r.doc_id),
-        e.groundTruth
+    const H = _(
+      () => Te(
+        w.value.filter((r) => !D.value || !Y(r.score, T.value)).map((r) => r.doc_id),
+        t.groundTruth
       )
     );
-    function H(r) {
-      var n, t;
-      return ((t = (n = e.groundTruth) == null ? void 0 : n.relevant_doc_ids) == null ? void 0 : t.includes(r)) ?? !1;
+    function Q(r) {
+      var a, e;
+      return ((e = (a = t.groundTruth) == null ? void 0 : a.relevant_doc_ids) == null ? void 0 : e.includes(r)) ?? !1;
     }
-    ce(async () => {
-      v.value.some((r) => r.id === f.value) || (f.value = v.value[0].id), await Q(), await q("load");
+    he(async () => {
+      h.value.some((r) => r.id === P.value) || (P.value = h.value[0].id), await V(), t.autoSearch && await E("load");
     });
-    async function Q() {
-      var t, g, L, U;
-      if (((t = M.value.capabilities) == null ? void 0 : t.supportsMethodListing) === !1) {
-        h.value = [];
+    async function V() {
+      var e, M, L, A;
+      if (((e = k.value.capabilities) == null ? void 0 : e.supportsMethodListing) === !1) {
+        v.value = [];
         return;
       }
       let r;
       try {
-        const p = await M.value.listMethods({
-          case_id: (g = e.case) == null ? void 0 : g.case_id
+        const p = await k.value.listMethods({
+          case_id: (M = t.case) == null ? void 0 : M.case_id
         });
-        r = p.length > 0 ? p : z.value ? [] : d;
+        r = p.length > 0 ? p : G.value ? [] : f;
       } catch {
-        r = z.value ? [] : d;
+        r = G.value ? [] : f;
       }
-      h.value = await ae(r);
-      const n = (p) => p.available !== !1;
-      !h.value.some((p) => p.id === k.value && n(p)) && h.value.length > 0 && (k.value = ((L = h.value.find((p) => p.id === W && n(p))) == null ? void 0 : L.id) ?? ((U = h.value.find(n)) == null ? void 0 : U.id) ?? h.value[0].id);
+      v.value = await le(r);
+      const a = (p) => p.available !== !1;
+      !v.value.some((p) => p.id === S.value && a(p)) && v.value.length > 0 && (S.value = ((L = v.value.find((p) => p.id === J && a(p))) == null ? void 0 : L.id) ?? ((A = v.value.find(a)) == null ? void 0 : A.id) ?? v.value[0].id);
     }
-    function V(r, n = {}) {
-      var t;
-      e.emitProvenance && l("provenance", {
+    function U(r, a = {}) {
+      var e;
+      t.emitProvenance && c("provenance", {
         timestamp: (/* @__PURE__ */ new Date()).toISOString(),
         action: r,
         target_kind: "retrieval",
-        target_id: ((t = e.case) == null ? void 0 : t.case_id) ?? null,
-        method: k.value,
+        target_id: ((e = t.case) == null ? void 0 : e.case_id) ?? null,
+        method: S.value,
         threshold: T.value,
-        provider_id: M.value.id,
-        ...n
+        provider_id: k.value.id,
+        ...a
       });
     }
-    async function q(r) {
-      if (!e.case) {
+    async function E(r) {
+      if (!t.case) {
         w.value = [];
         return;
       }
-      const n = ++S;
-      D.value = !0, E.value = null;
+      const a = ++C;
+      I.value = !0, x.value = null;
       try {
-        const t = await M.value.search({
-          query: e.case.fact_pattern,
-          method: k.value,
-          case_id: e.case.case_id
+        const e = await k.value.search({
+          query: R.value,
+          method: S.value,
+          case_id: t.case.case_id
         });
-        if (n !== S) return;
-        w.value = t.documents ?? [], l("results", t), V(r);
-      } catch (t) {
-        if (n !== S) return;
-        const g = t instanceof Error ? t.message : "Search failed";
-        E.value = g, w.value = [], e.emitErrorProvenance && V("search_error", {
-          reason: g
+        if (a !== C) return;
+        w.value = e.documents ?? [], c("results", e), U(r);
+      } catch (e) {
+        if (a !== C) return;
+        const M = e instanceof Error ? e.message : "Search failed";
+        x.value = M, w.value = [], t.emitErrorProvenance && U("search_error", {
+          reason: M
         });
       } finally {
-        if (n !== S) return;
-        D.value = !1;
+        if (a !== C) return;
+        I.value = !1;
       }
     }
-    function ne(r) {
-      if (r === k.value) return;
-      const n = h.value.find((t) => t.id === r);
-      (n == null ? void 0 : n.available) !== !1 && (k.value = r, q("change_method"));
+    function ie(r) {
+      if (r === S.value) return;
+      const a = v.value.find((e) => e.id === r);
+      (a == null ? void 0 : a.available) !== !1 && (S.value = r, E("change_method"));
     }
-    function se(r) {
-      T.value = $(Number(r.target.value) / 100);
+    function de(r) {
+      T.value = z(Number(r.target.value) / 100);
     }
-    async function ie(r) {
-      const n = r.target.value;
-      n !== f.value && (f.value = n, w.value = [], await Q(), await q("change_provider"));
+    async function ue(r) {
+      const a = r.target.value;
+      a !== P.value && (P.value = a, w.value = [], await V(), await E("change_provider"));
     }
-    return (r, n) => (s(), i("div", we, [
-      e.title ? (s(), i("h2", Ee, u(e.title), 1)) : b("", !0),
-      c("div", Se, [
-        R.value ? (s(), i("div", xe, [
-          n[1] || (n[1] = c("label", null, "Provider", -1)),
-          c("select", {
+    return n({ search: () => E("search") }), (r, a) => (s(), l("div", Ce, [
+      t.title ? (s(), l("h2", qe, u(t.title), 1)) : y("", !0),
+      d("div", Fe, [
+        t.autoSearch ? y("", !0) : (s(), l("div", Be, [
+          a[4] || (a[4] = d("label", null, "Query", -1)),
+          d("input", {
+            class: "query-input",
+            type: "text",
+            value: R.value,
+            placeholder: "Describe what you are looking for…",
+            "data-test": "query-input",
+            onInput: a[0] || (a[0] = (e) => R.value = e.target.value),
+            onKeyup: a[1] || (a[1] = fe((e) => E("search"), ["enter"]))
+          }, null, 40, De),
+          d("button", {
+            type: "button",
+            class: "search-btn",
+            "data-test": "search",
+            onClick: a[2] || (a[2] = (e) => E("search"))
+          }, " Search ")
+        ])),
+        re.value ? (s(), l("div", Re, [
+          a[5] || (a[5] = d("label", null, "Provider", -1)),
+          d("select", {
             class: "provider-select",
-            value: f.value,
-            onChange: ie
+            value: P.value,
+            onChange: ue
           }, [
-            (s(!0), i(C, null, F(v.value, (t) => (s(), i("option", {
-              key: t.id,
-              value: t.id
-            }, u(t.label), 9, Fe))), 128))
-          ], 40, Ce)
-        ])) : b("", !0),
-        te.value ? (s(), i("div", Re, [
-          n[2] || (n[2] = c("label", null, "Method", -1)),
-          (s(!0), i(C, null, F(h.value, (t) => {
-            var g;
-            return s(), i("button", {
-              key: t.id,
+            (s(!0), l(F, null, B(h.value, (e) => (s(), l("option", {
+              key: e.id,
+              value: e.id
+            }, u(e.label), 9, Le))), 128))
+          ], 40, Ie)
+        ])) : y("", !0),
+        ae.value ? (s(), l("div", $e, [
+          a[6] || (a[6] = d("label", null, "Method", -1)),
+          (s(!0), l(F, null, B(v.value, (e) => {
+            var M;
+            return s(), l("button", {
+              key: e.id,
               type: "button",
-              class: I(["method-btn", { active: t.id === k.value, unavailable: t.available === !1 }]),
-              "data-method": t.id,
-              disabled: t.available === !1,
-              title: t.available === !1 ? t.unavailableReason || `Requires: ${m(O)(t)}` : (g = t.dependencies) != null && g.length ? `Requires: ${m(O)(t)}` : void 0,
-              onClick: (L) => ne(t.id)
-            }, u(t.label), 11, Be);
+              class: $(["method-btn", { active: e.id === S.value, unavailable: e.available === !1 }]),
+              "data-method": e.id,
+              disabled: e.available === !1,
+              title: e.available === !1 ? e.unavailableReason || `Requires: ${b(O)(e)}` : (M = e.dependencies) != null && M.length ? `Requires: ${b(O)(e)}` : void 0,
+              onClick: (L) => ie(e.id)
+            }, u(e.label), 11, Oe);
           }), 128))
-        ])) : b("", !0),
-        B.value ? (s(), i("div", De, [
-          n[3] || (n[3] = c("label", null, "Threshold", -1)),
-          c("input", {
+        ])) : y("", !0),
+        D.value ? (s(), l("div", ze, [
+          a[7] || (a[7] = d("label", null, "Threshold", -1)),
+          d("input", {
             class: "threshold-slider",
             type: "range",
             min: "0",
             max: "100",
             value: Math.round(T.value * 100),
-            onInput: se
-          }, null, 40, qe),
-          c("span", Le, u(m(be)(T.value)), 1)
-        ])) : b("", !0),
-        c("div", Ie, [
-          e.showEvaluation && N.value.hasGroundTruth ? (s(), i("span", Oe, u(m(Me)(N.value)), 1)) : b("", !0)
+            onInput: de
+          }, null, 40, Ge),
+          d("span", Ne, u(b(Me)(T.value)), 1)
+        ])) : y("", !0),
+        d("div", He, [
+          t.showEvaluation && H.value.hasGroundTruth ? (s(), l("span", Qe, u(b(we)(H.value)), 1)) : y("", !0)
         ])
       ]),
-      oe.value ? (s(), i("div", $e, [
-        c("button", {
+      ne.value ? (s(), l("div", Ve, [
+        d("button", {
           type: "button",
           class: "dependency-toggle",
-          onClick: n[0] || (n[0] = (t) => x.value = !x.value)
-        }, u(x.value ? "▾" : "▸") + " Backend dependencies ", 1),
-        G.value.length ? (s(), i("ul", ze, [
-          (s(!0), i(C, null, F(G.value, (t) => (s(), i("li", {
-            key: t.id,
-            "data-blocked-method": t.id
+          onClick: a[3] || (a[3] = (e) => q.value = !q.value)
+        }, u(q.value ? "▾" : "▸") + " Backend dependencies ", 1),
+        N.value.length ? (s(), l("ul", Ue, [
+          (s(!0), l(F, null, B(N.value, (e) => (s(), l("li", {
+            key: e.id,
+            "data-blocked-method": e.id
           }, [
-            c("strong", null, u(t.label), 1),
-            j(" unavailable — " + u(t.unavailableReason || `requires ${m(O)(t)}`), 1)
-          ], 8, Ge))), 128))
-        ])) : b("", !0),
-        x.value ? (s(), i("pre", Ne, u(re.value), 1)) : b("", !0)
-      ])) : b("", !0),
-      D.value ? (s(), i("div", He, "Searching…")) : E.value ? (s(), i("div", Qe, u(E.value), 1)) : (s(), i("ul", Ve, [
-        (s(!0), i(C, null, F(w.value, (t) => (s(), i("li", {
-          key: t.doc_id,
-          class: I(["doc-card", { "below-threshold": B.value && m(K)(t.score, T.value) }]),
-          "data-doc-id": t.doc_id
+            d("strong", null, u(e.label), 1),
+            K(" unavailable — " + u(e.unavailableReason || `requires ${b(O)(e)}`), 1)
+          ], 8, je))), 128))
+        ])) : y("", !0),
+        q.value ? (s(), l("pre", Ae, u(se.value), 1)) : y("", !0)
+      ])) : y("", !0),
+      I.value ? (s(), l("div", Ke, "Searching…")) : x.value ? (s(), l("div", We, u(x.value), 1)) : (s(), l("ul", Je, [
+        (s(!0), l(F, null, B(w.value, (e) => (s(), l("li", {
+          key: e.doc_id,
+          class: $(["doc-card", { "below-threshold": D.value && b(Y)(e.score, T.value) }]),
+          "data-doc-id": e.doc_id
         }, [
-          c("div", je, [
-            j(u(t.title) + " ", 1),
-            e.showEvaluation && e.groundTruth ? (s(), i("span", {
+          d("div", Ye, [
+            K(u(e.title) + " ", 1),
+            t.showEvaluation && t.groundTruth ? (s(), l("span", {
               key: 0,
-              class: I(["gt-badge", H(t.doc_id) ? "gt-relevant" : "gt-distractor"])
-            }, u(H(t.doc_id) ? "relevant" : "distractor"), 3)) : b("", !0)
+              class: $(["gt-badge", Q(e.doc_id) ? "gt-relevant" : "gt-distractor"])
+            }, u(Q(e.doc_id) ? "relevant" : "distractor"), 3)) : y("", !0)
           ]),
-          c("div", Ae, u(t.doc_id) + " · " + u(t.provisions.length) + " prov", 1),
-          c("div", We, [
-            c("div", Je, [
-              c("div", {
+          d("div", Ze, u(e.doc_id) + " · " + u(e.provisions.length) + " prov", 1),
+          d("div", et, [
+            d("div", tt, [
+              d("div", {
                 class: "score-bar",
-                style: A({ width: m(ge)(t.score) + "%", background: m(J)(t.score) })
+                style: W({ width: b(ke)(e.score) + "%", background: b(X)(e.score) })
               }, null, 4)
             ]),
-            c("div", {
+            d("div", {
               class: "score-num",
-              style: A({ color: m(J)(t.score) })
-            }, u(m(ye)(t.score)), 5)
+              style: W({ color: b(X)(e.score) })
+            }, u(b(Se)(e.score)), 5)
           ]),
-          c("div", Ke, "Top: " + u(t.top_provision), 1)
-        ], 10, Ue))), 128))
+          d("div", ot, "Top: " + u(e.top_provision), 1)
+        ], 10, Xe))), 128))
       ]))
     ]));
   }
-}), Ye = (o, a) => {
-  const e = o.__vccOpts || o;
-  for (const [l, d] of a)
-    e[l] = d;
-  return e;
-}, Ze = /* @__PURE__ */ Ye(Xe, [["__scopeId", "data-v-0561961a"]]), at = {
+}), at = (o, n) => {
+  const i = o.__vccOpts || o;
+  for (const [t, c] of n)
+    i[t] = c;
+  return i;
+}, nt = /* @__PURE__ */ at(rt, [["__scopeId", "data-v-521a7494"]]), ut = {
   install(o) {
-    o.component("ProvisionRetriever", Ze);
+    o.component("ProvisionRetriever", nt);
   }
 };
 export {
-  W as DEFAULT_METHOD,
-  ee as DEFAULT_THRESHOLD,
-  Ze as ProvisionRetriever,
-  at as VueLegalProvisionRetrieverPlugin,
-  pe as createHostProvider,
-  Z as createProvidersFromConfig,
-  ot as createProvidersFromManifest,
-  me as createProvisionRetrieverOptionsFromConfig,
-  rt as createProvisionRetrieverOptionsFromManifest,
-  _e as createTransportProvider,
-  at as default,
-  Pe as evaluateSelection,
-  Me as formatEvalBadge,
-  ye as formatScore,
-  be as formatThreshold,
-  K as isBelowThreshold,
-  $ as normaliseThreshold,
-  it as resolveQueryBuilderConfig,
-  lt as resolveQueryBuilderConfigFromManifest,
-  J as scoreColor,
-  ge as scoreWidth,
-  dt as validateQueryBuilderManifest
+  J as DEFAULT_METHOD,
+  oe as DEFAULT_THRESHOLD,
+  nt as ProvisionRetriever,
+  ut as VueLegalProvisionRetrieverPlugin,
+  me as createHostProvider,
+  te as createProvidersFromConfig,
+  it as createProvidersFromManifest,
+  Pe as createProvisionRetrieverOptionsFromConfig,
+  dt as createProvisionRetrieverOptionsFromManifest,
+  ge as createTransportProvider,
+  ut as default,
+  Te as evaluateSelection,
+  we as formatEvalBadge,
+  Se as formatScore,
+  Me as formatThreshold,
+  Y as isBelowThreshold,
+  z as normaliseThreshold,
+  ht as resolveQueryBuilderConfig,
+  ft as resolveQueryBuilderConfigFromManifest,
+  X as scoreColor,
+  ke as scoreWidth,
+  pt as validateQueryBuilderManifest
 };

@@ -3,6 +3,22 @@
     <h2 v-if="props.title" class="title">{{ props.title }}</h2>
 
     <div class="controls">
+      <div v-if="!props.autoSearch" class="control-group query-group">
+        <label>Query</label>
+        <input
+          class="query-input"
+          type="text"
+          :value="queryText"
+          placeholder="Describe what you are looking for…"
+          data-test="query-input"
+          @input="queryText = ($event.target as HTMLInputElement).value"
+          @keyup.enter="runSearch('search')"
+        />
+        <button type="button" class="search-btn" data-test="search" @click="runSearch('search')">
+          Search
+        </button>
+      </div>
+
       <div v-if="showProviderSelector" class="control-group">
         <label>Provider</label>
         <select class="provider-select" :value="activeProviderId" @change="onProviderChange">
@@ -134,6 +150,7 @@ const props = withDefaults(defineProps<ProvisionRetrieverProps>(), {
   showEvaluation: false,
   emitProvenance: true,
   emitErrorProvenance: false,
+  autoSearch: true,
 })
 
 const emit = defineEmits<{
@@ -176,6 +193,8 @@ const showThresholdControls = computed(() => activeProvider.value.capabilities?.
 
 const methods = ref<MethodOption[]>(builtInMethods)
 const method = ref(props.defaultMethod)
+// The search text: the host's explicit query, else the case's fact pattern.
+const queryText = ref(props.query ?? props.case?.fact_pattern ?? '')
 const threshold = ref(normaliseThreshold(props.defaultThreshold))
 const documents = ref<RankedDocumentV1[]>([])
 const loading = ref(false)
@@ -220,7 +239,8 @@ onMounted(async () => {
     activeProviderId.value = availableProviders.value[0].id
   }
   await refreshProviderState()
-  await runSearch('load')
+  // D1: user-triggered search when autoSearch is off; the query input drives it.
+  if (props.autoSearch) await runSearch('load')
 })
 
 async function refreshProviderState() {
@@ -275,7 +295,7 @@ async function runSearch(action: string) {
   error.value = null
   try {
     const data = await activeProvider.value.search({
-      query: props.case.fact_pattern,
+      query: queryText.value,
       method: method.value,
       case_id: props.case.case_id,
     })
@@ -320,6 +340,9 @@ async function onProviderChange(event: Event) {
   await refreshProviderState()
   await runSearch('change_provider')
 }
+
+// Hosts can trigger the search programmatically when autoSearch is off.
+defineExpose({ search: () => runSearch('search') })
 </script>
 
 <style scoped>
@@ -347,6 +370,28 @@ async function onProviderChange(event: Event) {
   color: #5a6a7a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+.query-group {
+  flex: 1;
+  min-width: 320px;
+}
+.query-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 5px 10px;
+  border: 1px solid #d8e3eb;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+}
+.search-btn {
+  padding: 5px 14px;
+  border: 1px solid #1b6b93;
+  border-radius: 6px;
+  background: #1b6b93;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
 }
 .method-btn {
   padding: 5px 14px;

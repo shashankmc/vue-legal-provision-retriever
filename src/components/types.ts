@@ -31,6 +31,14 @@ export interface ProvisionRetrieverProps {
   title?: string
   /** The case to search for (case@1). */
   case?: CaseV1 | null
+  /** The query text. Defaults to the case's fact pattern when unset. */
+  query?: string
+  /**
+   * Run the search on mount. Default true. Set false to make the search
+   * user-triggered: the component shows an editable query and a Search button
+   * instead of firing on load.
+   */
+  autoSearch?: boolean
   /** Runs the search. The package never fetches. */
   onSearch?: (args: { query: string; method: string; case_id?: string }) => Promise<RankedProvisionsV1>
   /** Lists the retrieval methods the server offers. Called once on mount. */
