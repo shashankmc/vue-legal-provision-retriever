@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "legal-provision-types": "git+https://github.com/shashankmc/legal-provision-types.git#1388a4c",
-    "legal-retrieval-types": "file:../legal-retrieval-types",
+    "legal-retrieval-types": "git+https://github.com/shashankmc/legal-retrieval-types.git#2ed6dde",
     "lucide-vue-next": "^1.0.0"
   },
   "peerDependencies": {
