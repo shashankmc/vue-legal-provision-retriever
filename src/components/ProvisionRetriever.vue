@@ -156,6 +156,8 @@ const props = withDefaults(defineProps<ProvisionRetrieverProps>(), {
 const emit = defineEmits<{
   results: [data: import('legal-provision-types').RankedProvisionsV1]
   provenance: [event: RetrievalProvenance]
+  /** The slider moved; the host mirrors its threshold into its own state. */
+  'update:threshold': [value: number]
 }>()
 
 const builtInMethods: MethodOption[] = [
@@ -330,6 +332,7 @@ function setMethod(id: string) {
 function onThresholdInput(event: Event) {
   threshold.value = normaliseThreshold(Number((event.target as HTMLInputElement).value) / 100)
   // Re-evaluate selection live; the score data does not change with threshold.
+  emit('update:threshold', threshold.value)
 }
 
 async function onProviderChange(event: Event) {

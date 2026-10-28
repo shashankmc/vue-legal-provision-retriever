@@ -165,7 +165,7 @@ const Ce = { class: "provision-retriever" }, qe = {
     defaultMethod: { default: J },
     defaultThreshold: { default: oe }
   },
-  emits: ["results", "provenance"],
+  emits: ["results", "provenance", "update:threshold"],
   setup(o, { expose: n, emit: i }) {
     var j;
     const t = o, c = i, f = [
@@ -292,7 +292,7 @@ const Ce = { class: "provision-retriever" }, qe = {
       (a == null ? void 0 : a.available) !== !1 && (S.value = r, E("change_method"));
     }
     function de(r) {
-      T.value = z(Number(r.target.value) / 100);
+      T.value = z(Number(r.target.value) / 100), c("update:threshold", T.value);
     }
     async function ue(r) {
       const a = r.target.value;
@@ -416,7 +416,7 @@ const Ce = { class: "provision-retriever" }, qe = {
   for (const [t, c] of n)
     i[t] = c;
   return i;
-}, nt = /* @__PURE__ */ at(rt, [["__scopeId", "data-v-521a7494"]]), ut = {
+}, nt = /* @__PURE__ */ at(rt, [["__scopeId", "data-v-f4d210c6"]]), ut = {
   install(o) {
     o.component("ProvisionRetriever", nt);
   }
